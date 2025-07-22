@@ -1,5 +1,6 @@
 package com.fabien.smart_order.mapper;
 
+import com.fabien.smart_order.dto.OrderRequest;
 import com.fabien.smart_order.dto.OrderResponse;
 import com.fabien.smart_order.model.Order;
 
@@ -15,7 +16,7 @@ public class OrderMapper {
         return dto;
     }
 
-    public static Order toEntity(final OrderResponse dto) {
+    public static Order toEntity(final OrderRequest dto) {
         final Order order = new Order();
         order.setDelivery(dto.getDelivery());
         order.setPayment(dto.getPayment());

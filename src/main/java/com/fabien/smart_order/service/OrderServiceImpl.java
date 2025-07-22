@@ -44,7 +44,7 @@ public class OrderServiceImpl implements OrderService {
         order = orderRepository.findById(id);
 
         if (order.isPresent()) {
-            return order.get().cloneWithBuilder();
+            return orderRepository.save(order.get().cloneWithBuilder());
         } else {
             throw new EntityNotFoundException("Commande à dupliqué non trouvée ");
         }
