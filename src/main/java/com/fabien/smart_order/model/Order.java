@@ -49,18 +49,15 @@ public class Order {
         return Order.builder()
             .withDelivery(this.delivery)
             .withPayment(this.payment)
-            .withOrderItems(cloneOrderItems())
+            .withOrderItems(cloneOrderItems(this.items))
+            .withTotalAmount(this.totalAmount)
             .build();
-    }
-
-    private List<OrderItem> cloneOrderItems() {
-        return cloneOrderItems(this.items);
     }
 
     private List<OrderItem> cloneOrderItems(final List<OrderItem> orderItems) {
         final List<OrderItem> cloned = new ArrayList<>();
         for (final OrderItem item : orderItems) {
-            cloned.add(new OrderItem(item));
+            cloned.add(item.cloneWithoutId());
         }
         return cloned;
     }
@@ -69,6 +66,7 @@ public class Order {
         private List<OrderItem> orderItems;
         private String delivery;
         private String payment;
+        private double totalAmount;
 
         public OrderBuilder withOrderItems(final List<OrderItem> orderItems) {
             if (orderItems != null) {
@@ -91,11 +89,22 @@ public class Order {
             return this;
         }
 
+        public OrderBuilder withTotalAmount(final double total) {
+            this.totalAmount = total;
+            return this;
+        }
+
         public Order build() {
             final Order order = new Order();
             order.setItems(orderItems);
             order.setDelivery(delivery);
             order.setPayment(payment);
+
+            if (orderItems != null) {
+                for (OrderItem item : orderItems) {
+                    item.setOrder(order);
+                }
+            }
 
             return order;
         }

@@ -4,7 +4,10 @@ import com.fabien.smart_order.dto.ProductRequest;
 import com.fabien.smart_order.dto.ProductResponse;
 import com.fabien.smart_order.model.Product;
 
-public class ProductMapper {
+public final class ProductMapper {
+
+    private ProductMapper() {
+    }
 
     public static ProductResponse toResponse(final Product product) {
         final ProductResponse dto = new ProductResponse();

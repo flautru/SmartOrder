@@ -1,7 +1,9 @@
 package com.fabien.smart_order.service;
 
+import com.fabien.smart_order.event.OrderPublisher;
 import com.fabien.smart_order.model.Order;
 import com.fabien.smart_order.model.Order.OrderBuilder;
+import com.fabien.smart_order.model.OrderItem;
 import com.fabien.smart_order.repository.OrderRepository;
 import jakarta.persistence.EntityNotFoundException;
 import java.util.List;
@@ -17,6 +19,8 @@ public class OrderServiceImpl implements OrderService {
 
     private final OrderItemService orderItemService;
 
+    private final OrderPublisher orderPublisher;
+
     @Override
     public List<Order> getAllOrder() {
 
@@ -30,12 +34,20 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public Order createOrder(final Order order) {
-        final OrderBuilder createOrder = new OrderBuilder();
-        createOrder.withDelivery(order.getDelivery())
+        final List<OrderItem> items = orderItemService.buildOrderItems(order.getItems(), order);
+
+        final Order createNewOrder = new OrderBuilder()
+            .withDelivery(order.getDelivery())
             .withPayment(order.getPayment())
-            .withOrderItems(orderItemService.buildOrderItems(order.getItems(), order))
+            .withOrderItems(items)
             .build();
-        return orderRepository.save(createOrder.build());
+
+        final double total = orderItemService.calculateTotalAmount(items);
+        createNewOrder.setTotalAmount(total);
+
+        final Order createdOrder = orderRepository.save(createNewOrder);
+        orderPublisher.notifyOrderCreated(createdOrder);
+        return createdOrder;
     }
 
     @Override
@@ -44,7 +56,11 @@ public class OrderServiceImpl implements OrderService {
         order = orderRepository.findById(id);
 
         if (order.isPresent()) {
-            return orderRepository.save(order.get().cloneWithBuilder());
+            final Order clonedOrder = orderRepository.save(order.get().cloneWithBuilder());
+            clonedOrder.setTotalAmount(orderItemService.calculateTotalAmount(clonedOrder.getItems()));
+            orderPublisher.notifyOrderCreated(clonedOrder);
+            return clonedOrder;
+
         } else {
             throw new EntityNotFoundException("Commande à dupliqué non trouvée ");
         }

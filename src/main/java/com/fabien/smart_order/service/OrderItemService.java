@@ -19,8 +19,9 @@ public class OrderItemService {
         final List<OrderItem> orderItems = new ArrayList<>();
 
         for (final OrderItem i : items) {
-            final Product product = productRepository.findById(i.getId())
-                .orElseThrow(() -> new IllegalArgumentException("Produit introuvable avec id: " + i.getProduct()));
+            final Product product = productRepository.findById(i.getProduct().getId())
+                .orElseThrow(
+                    () -> new IllegalArgumentException("Produit introuvable avec id: " + i.getProduct().getId()));
 
             final OrderItem item = new OrderItem();
             item.setProduct(product);

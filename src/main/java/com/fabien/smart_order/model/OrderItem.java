@@ -32,14 +32,14 @@ public class OrderItem {
     private Product product;
 
     private double unitPrice;
-    
+
     private int quantity;
 
-    public OrderItem(final OrderItem item) {
-        this.id = item.getId();
-        this.order = item.getOrder();
-        this.product = item.getProduct();
-        this.unitPrice = item.getUnitPrice();
-        this.quantity = item.getQuantity();
+    public OrderItem cloneWithoutId() {
+        final OrderItem clone = new OrderItem();
+        clone.setProduct(this.product);
+        clone.setUnitPrice(this.unitPrice);
+        clone.setQuantity(this.quantity);
+        return clone;
     }
 }
