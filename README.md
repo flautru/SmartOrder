@@ -58,3 +58,21 @@ POST	/api/orders	Créer une nouvelle commande
 POST	/api/orders/{id}/clone	Cloner une commande existante
 GET	/api/config	Afficher la configuration système
 ```
+
+## 🧭 Roadmap Design Patterns (en cours d'intégration)
+
+Ce projet a pour objectif d’illustrer l'utilisation professionnelle des Design Patterns en Java/Spring Boot. Voici les évolutions prévues :
+
+| Design Pattern | Description | Statut |
+|----------------|-------------|--------|
+| 🟢 Observer | Notifications client par email ou SMS lorsque la commande est créée ou mise à jour. | À faire |
+| 🟢 Strategy | Stratégie de livraison interchangeable : Colissimo, Chronopost, Relais colis. | À faire |
+| 🟢 Template Method | Structure générique des notifications : entête, contenu, signature. | À faire |
+| 🟢 Specification | Validation métier des commandes : montant minimum, produits présents, etc. | À faire |
+| 🟢 State | Cycle de vie de la commande : Pending → Paid → Shipped → Delivered. | À faire |
+| 🟢 Decorator | Ajout dynamique d’options à la commande (emballage cadeau, assurance…). | À faire |
+| 🟢 Chain of Responsibility | Traitement du paiement en plusieurs étapes (validation → fraude → débit). | À faire |
+
+> 🛠️ Chaque pattern est intégré progressivement dans un esprit de clean architecture et testabilité. Suivez le Kanban GitHub pour suivre l’avancement.
+
+https://github.com/users/flautru/projects/2/views/1
