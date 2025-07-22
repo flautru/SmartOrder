@@ -5,7 +5,6 @@ import com.fabien.smart_order.dto.ProductResponse;
 import com.fabien.smart_order.mapper.ProductMapper;
 import com.fabien.smart_order.model.Product;
 import com.fabien.smart_order.service.ProductService;
-import jakarta.persistence.EntityNotFoundException;
 import java.net.URI;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -35,9 +34,7 @@ public class ProductController {
     @GetMapping("/{id}")
     public ResponseEntity<ProductResponse> getProductById(@PathVariable final Long id) {
         final Product product =
-            productService.getProductById(id).orElseThrow(() -> new EntityNotFoundException("Produit " +
-                "non " +
-                "trouvé avec l'id : " + id));
+            productService.getProductById(id);
 
         return ResponseEntity.ok(ProductMapper.toResponse(product));
     }

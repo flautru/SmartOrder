@@ -3,6 +3,7 @@ package com.fabien.smart_order.service;
 import com.fabien.smart_order.event.ProductCreatedEvent;
 import com.fabien.smart_order.model.Product;
 import com.fabien.smart_order.repository.ProductRepository;
+import jakarta.persistence.EntityNotFoundException;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -23,8 +24,10 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Optional<Product> getProductById(final Long id) {
-        return productRepository.findById(id);
+    public Product getProductById(final Long id) {
+        final Optional<Product> product = productRepository.findById(id);
+        return product.orElseThrow(() -> new EntityNotFoundException("No product found with id : " + id));
+
     }
 
     @Override
