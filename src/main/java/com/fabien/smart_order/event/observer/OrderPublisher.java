@@ -1,4 +1,4 @@
-package com.fabien.smart_order.event;
+package com.fabien.smart_order.event.observer;
 
 import com.fabien.smart_order.model.Order;
 import java.util.ArrayList;

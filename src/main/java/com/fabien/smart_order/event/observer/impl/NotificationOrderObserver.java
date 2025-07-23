@@ -1,7 +1,7 @@
-package com.fabien.smart_order.event.impl;
+package com.fabien.smart_order.event.observer.impl;
 
-import com.fabien.smart_order.event.OrderEvent;
-import com.fabien.smart_order.event.OrderObserver;
+import com.fabien.smart_order.event.observer.OrderEvent;
+import com.fabien.smart_order.event.observer.OrderObserver;
 
 public class NotificationOrderObserver implements OrderObserver {
     @Override

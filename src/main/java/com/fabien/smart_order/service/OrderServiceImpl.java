@@ -1,6 +1,6 @@
 package com.fabien.smart_order.service;
 
-import com.fabien.smart_order.event.OrderPublisher;
+import com.fabien.smart_order.event.observer.OrderPublisher;
 import com.fabien.smart_order.model.Order;
 import com.fabien.smart_order.model.OrderItem;
 import com.fabien.smart_order.repository.OrderRepository;

@@ -1,8 +1,8 @@
 package com.fabien.smart_order.config;
 
-import com.fabien.smart_order.event.OrderPublisher;
-import com.fabien.smart_order.event.impl.LoggingOrderObserver;
-import com.fabien.smart_order.event.impl.NotificationOrderObserver;
+import com.fabien.smart_order.event.observer.OrderPublisher;
+import com.fabien.smart_order.event.observer.impl.LoggingOrderObserver;
+import com.fabien.smart_order.event.observer.impl.NotificationOrderObserver;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
