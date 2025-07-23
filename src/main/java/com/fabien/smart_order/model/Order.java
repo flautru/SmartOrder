@@ -32,7 +32,7 @@ public class Order {
     private String payment;
     private double totalAmount;
 
-    private static OrderBuilder builder() {
+    public static OrderBuilder builder() {
         return new OrderBuilder();
     }
 
@@ -60,6 +60,14 @@ public class Order {
             cloned.add(item.cloneWithoutId());
         }
         return cloned;
+    }
+
+    public OrderBuilder toBuilder() {
+        return new OrderBuilder()
+            .withOrderItems(cloneOrderItems(this.items))
+            .withDelivery(this.delivery)
+            .withPayment(this.payment)
+            .withTotalAmount(this.totalAmount);
     }
 
     public static class OrderBuilder {

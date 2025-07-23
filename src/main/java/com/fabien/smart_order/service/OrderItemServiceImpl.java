@@ -19,15 +19,16 @@ public class OrderItemServiceImpl {
 
     private final ProductRepository productRepository;
 
-    public List<OrderItem> buildOrderItems(final List<OrderItem> items, final Order order) {
+    public List<OrderItem> buildOrderItems(final Order order) {
 
-        if (items == null || items.isEmpty()) {
-            return new ArrayList<>();
-        }
         if (order == null) {
             throw new IllegalArgumentException("Order can't be null");
         }
+        if (order.getItems() == null || order.getItems().isEmpty()) {
+            return new ArrayList<>();
+        }
 
+        List<OrderItem> items = order.getItems();
         final Set<Long> productIds =
             items.stream().map(orderItem -> orderItem.getProduct().getId()).collect(Collectors.toSet());
         final Map<Long, Product> productsMap =

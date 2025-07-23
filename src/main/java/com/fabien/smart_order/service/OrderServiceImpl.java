@@ -2,7 +2,6 @@ package com.fabien.smart_order.service;
 
 import com.fabien.smart_order.event.OrderPublisher;
 import com.fabien.smart_order.model.Order;
-import com.fabien.smart_order.model.Order.OrderBuilder;
 import com.fabien.smart_order.model.OrderItem;
 import com.fabien.smart_order.repository.OrderRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -31,23 +30,22 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public Optional<Order> getOrderById(final Long id) {
-        return orderRepository.findById(id);
+    public Order getOrderById(final Long id) {
+        Optional<Order> order = orderRepository.findById(id);
+        return order.orElseThrow(() -> new EntityNotFoundException("No order found with id : " + id));
     }
 
     @Override
     @Transactional
     public Order createOrder(final Order order) {
-        final List<OrderItem> items = orderItemServiceImpl.buildOrderItems(order.getItems(), order);
 
-        final Order createNewOrder = new OrderBuilder()
-            .withDelivery(order.getDelivery())
-            .withPayment(order.getPayment())
-            .withOrderItems(items)
-            .build();
-
+        final List<OrderItem> items = orderItemServiceImpl.buildOrderItems(order);
         final double total = orderItemServiceImpl.calculateTotalAmount(items);
-        createNewOrder.setTotalAmount(total);
+
+        final Order createNewOrder = order.toBuilder()
+            .withOrderItems(items)
+            .withTotalAmount(total)
+            .build();
 
         final Order createdOrder = orderRepository.save(createNewOrder);
         TransactionSynchronizationManager.registerSynchronization(
@@ -75,5 +73,22 @@ public class OrderServiceImpl implements OrderService {
         } else {
             throw new EntityNotFoundException("Commande à dupliqué non trouvée ");
         }
+    }
+
+    @Override
+    public Order createOrderFromRawItems(final String delivery, final String payment, final List<OrderItem> rawItems) {
+        Order tempOrder = Order.builder()
+            .withDelivery(delivery)
+            .withPayment(payment)
+            .withOrderItems(rawItems)
+            .build();
+
+        List<OrderItem> enrichedItems = orderItemServiceImpl.buildOrderItems(tempOrder);
+        double total = orderItemServiceImpl.calculateTotalAmount(enrichedItems);
+
+        return tempOrder.toBuilder()  // ✅ Plus élégant !
+            .withOrderItems(enrichedItems)
+            .withTotalAmount(total)
+            .build();
     }
 }

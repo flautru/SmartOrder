@@ -5,10 +5,8 @@ import com.fabien.smart_order.dto.OrderResponse;
 import com.fabien.smart_order.mapper.OrderMapper;
 import com.fabien.smart_order.model.Order;
 import com.fabien.smart_order.service.OrderService;
-import jakarta.persistence.EntityNotFoundException;
 import java.net.URI;
 import java.util.List;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,13 +34,9 @@ public class OrderController {
 
     @GetMapping("/{id}")
     public ResponseEntity<OrderResponse> getOrderById(@PathVariable Long id) {
-        final Optional<Order> order = orderService.getOrderById(id);
+        final Order order = orderService.getOrderById(id);
 
-        if (order.isEmpty()) {
-            throw new EntityNotFoundException("Order not found with id : " + id);
-        }
-
-        final OrderResponse orderResponse = OrderMapper.toDto(order.get());
+        final OrderResponse orderResponse = OrderMapper.toDto(order);
 
         return ResponseEntity.ok(orderResponse);
     }
@@ -63,10 +57,7 @@ public class OrderController {
 
     @PostMapping("/{id}/clone")
     public ResponseEntity<OrderResponse> cloneOrder(@PathVariable Long id) {
-        final Optional<Order> order = orderService.getOrderById(id);
-        if (orderService.getOrderById(id).isEmpty()) {
-            throw new EntityNotFoundException("Order not found with id : " + id);
-        }
+        final Order order = orderService.getOrderById(id);
 
         final Order clonedOrder = orderService.cloneOrderById(id);
         final OrderResponse clonedOrderResponse = OrderMapper.toDto(clonedOrder);

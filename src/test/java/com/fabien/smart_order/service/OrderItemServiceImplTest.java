@@ -4,7 +4,6 @@ import com.fabien.smart_order.model.Order;
 import com.fabien.smart_order.model.OrderItem;
 import com.fabien.smart_order.model.Product;
 import com.fabien.smart_order.repository.ProductRepository;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,10 +34,6 @@ class OrderItemServiceImplTest {
 
         final Product p1 = new Product(1L, "LaptopTest", 599.99, "InfoTest");
         final Product p2 = new Product(2L, "SourisTest", 49.99, "InfoTest");
-        final Order order = new Order.OrderBuilder()
-            .withPayment("TestCb")
-            .withDelivery("TestColissimo")
-            .build();
 
         final OrderItem inputItem1 = new OrderItem();
         inputItem1.setProduct(p1);
@@ -49,10 +44,15 @@ class OrderItemServiceImplTest {
         inputItem2.setProduct(p2);
         inputItem2.setQuantity(1);
         inputItem2.setUnitPrice(49.99);
+        final Order order = new Order.OrderBuilder()
+            .withPayment("TestCb")
+            .withDelivery("TestColissimo")
+            .withOrderItems(List.of(inputItem1, inputItem2))
+            .build();
 
         when(productRepository.findAllById(Set.of(1L, 2L))).thenReturn(List.of(p1, p2));
 
-        final List<OrderItem> result = orderItemService.buildOrderItems(List.of(inputItem1, inputItem2), order);
+        final List<OrderItem> result = orderItemService.buildOrderItems(order);
 
         assertEquals(2, result.size());
 
@@ -79,7 +79,7 @@ class OrderItemServiceImplTest {
             .withDelivery("TestColissimo")
             .build();
 
-        final List<OrderItem> result = orderItemService.buildOrderItems(null, order);
+        final List<OrderItem> result = orderItemService.buildOrderItems(order);
 
         assertTrue(result.isEmpty());
         verify(productRepository, never()).findAllById(any());
@@ -93,7 +93,7 @@ class OrderItemServiceImplTest {
             .withDelivery("TestColissimo")
             .build();
 
-        final List<OrderItem> result = orderItemService.buildOrderItems(new ArrayList<>(), order);
+        final List<OrderItem> result = orderItemService.buildOrderItems(order);
 
         assertTrue(result.isEmpty());
         verify(productRepository, never()).findAllById(any());
@@ -110,7 +110,7 @@ class OrderItemServiceImplTest {
 
         final IllegalArgumentException exception = assertThrows(
             IllegalArgumentException.class,
-            () -> orderItemService.buildOrderItems(List.of(inputItem), null)
+            () -> orderItemService.buildOrderItems(null)
         );
 
         assertEquals("Order can't be null", exception.getMessage());
@@ -121,21 +121,22 @@ class OrderItemServiceImplTest {
     void givenUnknownProduct_whenBuildOrderItems_shouldThrowException() {
 
         final Product p1 = new Product(1L, "LaptopTest", 599.99, "InfoTest");
-        final Order order = new Order.OrderBuilder()
-            .withPayment("TestCb")
-            .withDelivery("TestColissimo")
-            .build();
 
         final OrderItem inputItem = new OrderItem();
         inputItem.setProduct(p1);
         inputItem.setQuantity(2);
         inputItem.setUnitPrice(99.99);
 
+        final Order order = new Order.OrderBuilder()
+            .withPayment("TestCb")
+            .withDelivery("TestColissimo")
+            .withOrderItems(List.of(inputItem))
+            .build();
         when(productRepository.findAllById(Set.of(1L))).thenReturn(List.of());
 
         final IllegalArgumentException exception = assertThrows(
             IllegalArgumentException.class,
-            () -> orderItemService.buildOrderItems(List.of(inputItem), order)
+            () -> orderItemService.buildOrderItems(order)
         );
 
         assertEquals("Product not found with id : 1", exception.getMessage());
