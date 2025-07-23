@@ -10,6 +10,9 @@ import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 @Service
 @RequiredArgsConstructor
@@ -17,7 +20,7 @@ public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
 
-    private final OrderItemService orderItemService;
+    private final OrderItemServiceImpl orderItemServiceImpl;
 
     private final OrderPublisher orderPublisher;
 
@@ -33,8 +36,9 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Transactional
     public Order createOrder(final Order order) {
-        final List<OrderItem> items = orderItemService.buildOrderItems(order.getItems(), order);
+        final List<OrderItem> items = orderItemServiceImpl.buildOrderItems(order.getItems(), order);
 
         final Order createNewOrder = new OrderBuilder()
             .withDelivery(order.getDelivery())
@@ -42,11 +46,18 @@ public class OrderServiceImpl implements OrderService {
             .withOrderItems(items)
             .build();
 
-        final double total = orderItemService.calculateTotalAmount(items);
+        final double total = orderItemServiceImpl.calculateTotalAmount(items);
         createNewOrder.setTotalAmount(total);
 
         final Order createdOrder = orderRepository.save(createNewOrder);
-        orderPublisher.notifyOrderCreated(createdOrder);
+        TransactionSynchronizationManager.registerSynchronization(
+            new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    orderPublisher.notifyOrderCreated(createdOrder);
+                }
+            });
+
         return createdOrder;
     }
 
@@ -57,7 +68,7 @@ public class OrderServiceImpl implements OrderService {
 
         if (order.isPresent()) {
             final Order clonedOrder = orderRepository.save(order.get().cloneWithBuilder());
-            clonedOrder.setTotalAmount(orderItemService.calculateTotalAmount(clonedOrder.getItems()));
+            clonedOrder.setTotalAmount(orderItemServiceImpl.calculateTotalAmount(clonedOrder.getItems()));
             orderPublisher.notifyOrderCreated(clonedOrder);
             return clonedOrder;
 

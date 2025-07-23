@@ -7,7 +7,7 @@ import com.fabien.smart_order.model.OrderItem;
 import com.fabien.smart_order.model.Product;
 import com.fabien.smart_order.repository.OrderRepository;
 import com.fabien.smart_order.repository.ProductRepository;
-import com.fabien.smart_order.service.OrderItemService;
+import com.fabien.smart_order.service.OrderItemServiceImpl;
 import java.util.List;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.ApplicationEventPublisher;
@@ -20,7 +20,7 @@ public class DataInitializer {
     @Bean
     CommandLineRunner initData(final ProductRepository productRepository,
         final OrderRepository orderRepository,
-        final OrderItemService orderItemService,
+        final OrderItemServiceImpl orderItemServiceImpl,
         final OrderPublisher orderPublisher,
         final ApplicationEventPublisher eventPublisher) {
 
@@ -44,7 +44,7 @@ public class DataInitializer {
                 .withDelivery("Colissimo")
                 .withPayment("CB")
                 .withOrderItems(
-                    orderItemService.buildOrderItems(
+                    orderItemServiceImpl.buildOrderItems(
                         List.of(
                             new OrderItem(null, null, p1, 999.99, 1),
                             new OrderItem(null, null, p2, 49.99, 2)
@@ -58,7 +58,7 @@ public class DataInitializer {
                 .withDelivery("Chronopost")
                 .withPayment("Paypal")
                 .withOrderItems(
-                    orderItemService.buildOrderItems(
+                    orderItemServiceImpl.buildOrderItems(
                         List.of(
                             new OrderItem(null, null, p4, 45.99, 4),
                             new OrderItem(null, null, p5, 24.99, 2)

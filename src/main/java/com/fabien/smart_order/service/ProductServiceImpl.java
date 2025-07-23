@@ -9,6 +9,7 @@ import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -31,10 +32,21 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional
     public Product saveProduct(final Product product) {
-        Product saved = productRepository.save(product);
 
-        eventPublisher.publishEvent(new ProductCreatedEvent(saved));
+        if (product == null) {
+            throw new IllegalArgumentException("Product can't be null");
+        }
+        final Product saved = productRepository.save(product);
+        try {
+            eventPublisher.publishEvent(new ProductCreatedEvent(saved));
+        } catch (final Exception e) {
+            System.out.println(
+                "Notification failed, but product save successfully for product " + saved.getId() + " : " +
+                    e.getMessage());
+        }
+
         return saved;
     }
 }
