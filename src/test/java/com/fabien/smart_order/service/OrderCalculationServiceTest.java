@@ -1,5 +1,6 @@
 package com.fabien.smart_order.service;
 
+import com.fabien.smart_order.calculation.CalculationType;
 import com.fabien.smart_order.calculation.TotalCalculationStrategy;
 import com.fabien.smart_order.calculation.factory.TotalCalculationStrategyFactory;
 import com.fabien.smart_order.model.OrderItem;
@@ -31,15 +32,15 @@ class OrderCalculationServiceTest {
     void givenValidItems_whenCalculateWithStrategy_shouldReturnCorrectTotal() {
         // Given
         List<OrderItem> items = createOrderItems();
-        when(strategyFactory.getStrategy("DISCOUNT")).thenReturn(mockStrategy);
+        when(strategyFactory.getStrategy(CalculationType.DISCOUNT)).thenReturn(mockStrategy);
         when(mockStrategy.calculate(items)).thenReturn(90.0);
 
         // When
-        double result = calculationService.calculateTotal(items, "DISCOUNT");
+        double result = calculationService.calculateTotal(items, CalculationType.DISCOUNT);
 
         // Then
         assertEquals(90.0, result);
-        verify(strategyFactory).getStrategy("DISCOUNT");
+        verify(strategyFactory).getStrategy(CalculationType.DISCOUNT);
         verify(mockStrategy).calculate(items);
     }
 

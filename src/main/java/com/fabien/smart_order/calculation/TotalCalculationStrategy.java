@@ -6,5 +6,5 @@ import java.util.List;
 public interface TotalCalculationStrategy {
     double calculate(List<OrderItem> items);
 
-    String getStrategyName();
+    CalculationType getStrategyName();
 }

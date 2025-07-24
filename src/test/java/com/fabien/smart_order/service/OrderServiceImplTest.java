@@ -123,7 +123,7 @@ class OrderServiceImplTest {
             when(orderItemService.buildOrderItems(inputOrder))
                 .thenReturn(builtOrderItems);
 
-            when(calculationService.calculateTotal(builtOrderItems, "STANDARD"))
+            when(calculationService.calculateTotal(builtOrderItems))
                 .thenReturn(649.98);
 
             final Order order = orderService.createOrder(inputOrder);
@@ -137,7 +137,7 @@ class OrderServiceImplTest {
             assertEquals(expectedSavedOrder.getPayment(), order.getPayment());
 
             inOrder.verify(orderItemService).buildOrderItems(inputOrder);
-            inOrder.verify(calculationService).calculateTotal(builtOrderItems, "STANDARD");
+            inOrder.verify(calculationService).calculateTotal(builtOrderItems);
             inOrder.verify(orderRepository).save(any(Order.class));
 
             captor.getValue().afterCommit();

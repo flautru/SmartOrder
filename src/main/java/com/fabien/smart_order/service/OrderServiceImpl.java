@@ -39,7 +39,7 @@ public class OrderServiceImpl implements OrderService {
     public Order createOrder(final Order order) {
 
         final List<OrderItem> items = orderItemServiceImpl.buildOrderItems(order);
-        final double total = calculationService.calculateTotal(items, "STANDARD");
+        final double total = calculationService.calculateTotal(items);
 
         final Order createNewOrder = order.toBuilder()
             .withOrderItems(items)

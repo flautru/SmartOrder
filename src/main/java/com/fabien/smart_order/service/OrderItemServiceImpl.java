@@ -51,10 +51,4 @@ public class OrderItemServiceImpl {
                 return item;
             }).toList();
     }
-
-    //public double calculateTotalAmount(List<OrderItem> orderItems) {
-    //    return orderItems.stream()
-    //        .mapToDouble(item -> item.getUnitPrice() * item.getQuantity())
-    //        .sum();
-    //}
 }
