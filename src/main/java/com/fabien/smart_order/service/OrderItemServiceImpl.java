@@ -52,9 +52,9 @@ public class OrderItemServiceImpl {
             }).toList();
     }
 
-    public double calculateTotalAmount(List<OrderItem> orderItems) {
-        return orderItems.stream()
-            .mapToDouble(item -> item.getUnitPrice() * item.getQuantity())
-            .sum();
-    }
+    //public double calculateTotalAmount(List<OrderItem> orderItems) {
+    //    return orderItems.stream()
+    //        .mapToDouble(item -> item.getUnitPrice() * item.getQuantity())
+    //        .sum();
+    //}
 }

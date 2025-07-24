@@ -33,13 +33,15 @@ class OrderServiceImplTest {
     private OrderItemServiceImpl orderItemService;
     private OrderServiceImpl orderService;
     private OrderPublisher orderPublisher;
+    private OrderCalculationService calculationService;
 
     @BeforeEach
     void setUp() {
         orderRepository = mock(OrderRepository.class);
         orderPublisher = mock(OrderPublisher.class);
         orderItemService = mock(OrderItemServiceImpl.class);
-        orderService = new OrderServiceImpl(orderRepository, orderItemService, orderPublisher);
+        calculationService = mock(OrderCalculationService.class);
+        orderService = new OrderServiceImpl(orderRepository, orderItemService, orderPublisher, calculationService);
     }
 
     @Test
@@ -121,12 +123,12 @@ class OrderServiceImplTest {
             when(orderItemService.buildOrderItems(inputOrder))
                 .thenReturn(builtOrderItems);
 
-            when(orderItemService.calculateTotalAmount(builtOrderItems))
+            when(calculationService.calculateTotal(builtOrderItems, "STANDARD"))
                 .thenReturn(649.98);
 
             final Order order = orderService.createOrder(inputOrder);
 
-            final InOrder inOrder = inOrder(orderRepository, orderItemService);
+            final InOrder inOrder = inOrder(orderRepository, orderItemService, calculationService);
 
             assertEquals(expectedSavedOrder.getId(), order.getId());
             assertEquals(expectedSavedOrder.getTotalAmount(), order.getTotalAmount());
@@ -135,7 +137,7 @@ class OrderServiceImplTest {
             assertEquals(expectedSavedOrder.getPayment(), order.getPayment());
 
             inOrder.verify(orderItemService).buildOrderItems(inputOrder);
-            inOrder.verify(orderItemService).calculateTotalAmount(builtOrderItems);
+            inOrder.verify(calculationService).calculateTotal(builtOrderItems, "STANDARD");
             inOrder.verify(orderRepository).save(any(Order.class));
 
             captor.getValue().afterCommit();

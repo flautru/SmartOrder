@@ -18,10 +18,9 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
-
     private final OrderItemServiceImpl orderItemServiceImpl;
-
     private final OrderPublisher orderPublisher;
+    private final OrderCalculationService calculationService;
 
     @Override
     public List<Order> getAllOrder() {
@@ -40,7 +39,7 @@ public class OrderServiceImpl implements OrderService {
     public Order createOrder(final Order order) {
 
         final List<OrderItem> items = orderItemServiceImpl.buildOrderItems(order);
-        final double total = orderItemServiceImpl.calculateTotalAmount(items);
+        final double total = calculationService.calculateTotal(items, "STANDARD");
 
         final Order createNewOrder = order.toBuilder()
             .withOrderItems(items)
@@ -66,7 +65,7 @@ public class OrderServiceImpl implements OrderService {
 
         if (order.isPresent()) {
             final Order clonedOrder = orderRepository.save(order.get().cloneWithBuilder());
-            clonedOrder.setTotalAmount(orderItemServiceImpl.calculateTotalAmount(clonedOrder.getItems()));
+            clonedOrder.setTotalAmount(calculationService.calculateTotal(clonedOrder.getItems()));
             orderPublisher.notifyOrderCreated(clonedOrder);
             return clonedOrder;
 
@@ -84,9 +83,9 @@ public class OrderServiceImpl implements OrderService {
             .build();
 
         List<OrderItem> enrichedItems = orderItemServiceImpl.buildOrderItems(tempOrder);
-        double total = orderItemServiceImpl.calculateTotalAmount(enrichedItems);
+        double total = calculationService.calculateTotal(enrichedItems);
 
-        return tempOrder.toBuilder()  // ✅ Plus élégant !
+        return tempOrder.toBuilder()
             .withOrderItems(enrichedItems)
             .withTotalAmount(total)
             .build();
