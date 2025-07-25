@@ -7,7 +7,7 @@ import com.fabien.smart_order.model.OrderItem;
 import com.fabien.smart_order.model.Product;
 import com.fabien.smart_order.repository.OrderRepository;
 import com.fabien.smart_order.repository.ProductRepository;
-import com.fabien.smart_order.service.OrderService;
+import com.fabien.smart_order.service.Order.OrderService;
 import java.util.List;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.ApplicationEventPublisher;

@@ -4,7 +4,7 @@ import com.fabien.smart_order.dto.ProductRequest;
 import com.fabien.smart_order.dto.ProductResponse;
 import com.fabien.smart_order.mapper.ProductMapper;
 import com.fabien.smart_order.model.Product;
-import com.fabien.smart_order.service.ProductService;
+import com.fabien.smart_order.service.product.ProductService;
 import java.net.URI;
 import java.util.List;
 import lombok.RequiredArgsConstructor;

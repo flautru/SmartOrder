@@ -1,9 +1,12 @@
-package com.fabien.smart_order.service;
+package com.fabien.smart_order.service.Order;
 
 import com.fabien.smart_order.event.observer.OrderPublisher;
 import com.fabien.smart_order.model.Order;
 import com.fabien.smart_order.model.OrderItem;
 import com.fabien.smart_order.repository.OrderRepository;
+import com.fabien.smart_order.service.OrderCalculationService;
+import com.fabien.smart_order.service.OrderItem.OrderItemServiceImpl;
+import com.fabien.smart_order.service.OrderValidationService;
 import jakarta.persistence.EntityNotFoundException;
 import java.util.List;
 import java.util.Optional;
@@ -21,6 +24,7 @@ public class OrderServiceImpl implements OrderService {
     private final OrderItemServiceImpl orderItemServiceImpl;
     private final OrderPublisher orderPublisher;
     private final OrderCalculationService calculationService;
+    private final OrderValidationService orderValidationService;
 
     @Override
     public List<Order> getAllOrder() {
@@ -46,7 +50,10 @@ public class OrderServiceImpl implements OrderService {
             .withTotalAmount(total)
             .build();
 
+        orderValidationService.validateOrderOrThrow(order);
+
         final Order createdOrder = orderRepository.save(createNewOrder);
+
         TransactionSynchronizationManager.registerSynchronization(
             new TransactionSynchronization() {
                 @Override
@@ -54,7 +61,6 @@ public class OrderServiceImpl implements OrderService {
                     orderPublisher.notifyOrderCreated(createdOrder);
                 }
             });
-
         return createdOrder;
     }
 

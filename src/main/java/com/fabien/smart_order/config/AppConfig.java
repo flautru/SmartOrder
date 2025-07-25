@@ -10,6 +10,7 @@ public class AppConfig {
     private final String applicationName;
     private final double discount_threshold;
     private final double discount_rate;
+    private final double minimumOrderAmount;
     @Setter
     private double defaultVatRate;
     @Setter
@@ -21,6 +22,7 @@ public class AppConfig {
         this.demoMode = false;
         this.discount_threshold = 150.0;
         this.discount_rate = 0.10;
+        this.minimumOrderAmount = 25.0;
     }
 
     public static AppConfig getInstance() {

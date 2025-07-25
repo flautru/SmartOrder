@@ -1,4 +1,4 @@
-package com.fabien.smart_order.service;
+package com.fabien.smart_order.service.OrderItem;
 
 import com.fabien.smart_order.model.Order;
 import com.fabien.smart_order.model.OrderItem;

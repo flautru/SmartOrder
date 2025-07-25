@@ -27,6 +27,6 @@ public class TotalCalculationStrategyFactory {
     }
 
     public TotalCalculationStrategy getDefaultStrategy() {
-        return strategies.get("STANDARD");
+        return strategies.get(CalculationType.STANDARD);
     }
 }

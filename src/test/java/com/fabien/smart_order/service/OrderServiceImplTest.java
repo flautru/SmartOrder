@@ -5,6 +5,9 @@ import com.fabien.smart_order.model.Order;
 import com.fabien.smart_order.model.OrderItem;
 import com.fabien.smart_order.model.Product;
 import com.fabien.smart_order.repository.OrderRepository;
+import com.fabien.smart_order.service.Order.OrderServiceImpl;
+import com.fabien.smart_order.service.OrderItem.OrderItemServiceImpl;
+import com.fabien.smart_order.util.TestDataBuilder;
 import jakarta.persistence.EntityNotFoundException;
 import java.util.List;
 import java.util.Optional;
@@ -21,9 +24,11 @@ import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -34,6 +39,7 @@ class OrderServiceImplTest {
     private OrderServiceImpl orderService;
     private OrderPublisher orderPublisher;
     private OrderCalculationService calculationService;
+    private OrderValidationService orderValidationService;
 
     @BeforeEach
     void setUp() {
@@ -41,16 +47,19 @@ class OrderServiceImplTest {
         orderPublisher = mock(OrderPublisher.class);
         orderItemService = mock(OrderItemServiceImpl.class);
         calculationService = mock(OrderCalculationService.class);
-        orderService = new OrderServiceImpl(orderRepository, orderItemService, orderPublisher, calculationService);
+        orderValidationService = mock(OrderValidationService.class);
+        orderService = new OrderServiceImpl(orderRepository, orderItemService, orderPublisher, calculationService,
+            orderValidationService);
     }
 
     @Test
     void givenValidOrders_whenGetAllOrders_shouldReturnListOrders() {
-        final List<Order> expectedOrders = createOrderList();
+        final List<Order> expectedOrders = TestDataBuilder.createOrderList();
         expectedOrders.get(0).setId(1L);
         expectedOrders.get(1).setId(2L);
         expectedOrders.get(0).setTotalAmount(699.99);
         expectedOrders.get(1).setTotalAmount(53.48);
+
         when(orderRepository.findAll()).thenReturn(expectedOrders);
         final List<Order> orders = orderService.getAllOrder();
 
@@ -68,7 +77,7 @@ class OrderServiceImplTest {
     @Test
     void givenExistingIdOrder_whenGetOrderById_shouldReturnValidOrder() {
 
-        final Order expectedOrder = createSingleOrder();
+        final Order expectedOrder = TestDataBuilder.createStandardOrder();
         expectedOrder.setId(1L);
         expectedOrder.setTotalAmount(49.99);
         when(orderRepository.findById(1L)).thenReturn(Optional.of(expectedOrder));
@@ -100,8 +109,8 @@ class OrderServiceImplTest {
     void givenValidOrder_whenSaveOrder_shouldReturnOrderAndPublishEvent() {
         try (MockedStatic<TransactionSynchronizationManager> mockedTxManager =
                  mockStatic(TransactionSynchronizationManager.class)) {
-            final Order inputOrder = createSingleOrder();
-            final Order expectedSavedOrder = createSingleOrder();
+            final Order inputOrder = TestDataBuilder.createStandardOrder();
+            final Order expectedSavedOrder = TestDataBuilder.createStandardOrder();
             inputOrder.setId(1L);
             inputOrder.setTotalAmount(649.98);
             expectedSavedOrder.setId(1L);
@@ -116,8 +125,8 @@ class OrderServiceImplTest {
 
             when(orderRepository.save(any(Order.class))).thenReturn(expectedSavedOrder);
             final List<OrderItem> builtOrderItems = List.of(
-                createOrderItem(1L, new Product(1L, "LaptopTest", 599.99, "InfoTest"), 599.99, 1),
-                createOrderItem(2L, new Product(2L, "SourisTest", 49.99, "InfoTest"), 49.99, 1)
+                TestDataBuilder.createOrderItem(1L, new Product(1L, "LaptopTest", 599.99, "InfoTest"), 599.99, 1),
+                TestDataBuilder.createOrderItem(2L, new Product(2L, "SourisTest", 49.99, "InfoTest"), 49.99, 1)
             );
 
             when(orderItemService.buildOrderItems(inputOrder))
@@ -146,46 +155,28 @@ class OrderServiceImplTest {
         }
     }
 
-    private Order createOrderWithProducts(final List<Product> products, final String delivery,
-        final String payment) {
-        final List<OrderItem> orderItems = products.stream()
-            .map(product -> new OrderItem(null, null, product, product.getPrice(), 1))
-            .toList();
+    @Test
+    void givenInvalidOrder_whenCreateOrder_shouldThrowIllegalArgumentException() {
+        final Order inputOrder = TestDataBuilder.createOrderWithAmount(0.0);
 
-        return new Order.OrderBuilder()
-            .withDelivery(delivery)
-            .withPayment(payment)
-            .withOrderItems(orderItems)
-            .build();
-    }
+        final List<OrderItem> builtOrderItems = List.of();
+        when(orderItemService.buildOrderItems(inputOrder)).thenReturn(builtOrderItems);
+        when(calculationService.calculateTotal(builtOrderItems)).thenReturn(5.0);
 
-    private Order createSingleOrder() {
-        final List<Product> products = List.of(
-            new Product(1L, "LaptopTest", 599.99, "InfoTest"),
-            new Product(2L, "SourisTest", 49.99, "InfoTest")
-        );
-        return createOrderWithProducts(products, "Colissimo", "CB");
-    }
+        doThrow(
+            new IllegalArgumentException("Validation échouée: Le montant de la commande doit être d'au moins 10.0€"))
+            .when(orderValidationService).validateOrderOrThrow(any(Order.class));
 
-    private List<Order> createOrderList() {
-        final Order o1 = createSingleOrder();
+        final IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            orderService.createOrder(inputOrder);
+        });
 
-        final List<Product> products2 = List.of(
-            new Product(null, "ChaiseTest", 45.99, "MeubleTest"),
-            new Product(null, "TapisTest", 24.99, "DécorationTest")
-        );
-        final Order o2 = createOrderWithProducts(products2, "Chronopost", "Paypal");
+        assertEquals("Validation échouée: Le montant de la commande doit être d'au moins 10.0€",
+            exception.getMessage());
 
-        return List.of(o1, o2);
-    }
+        verify(orderValidationService).validateOrderOrThrow(any(Order.class));
 
-    private OrderItem createOrderItem(final Long id, final Product product, final double unitPrice,
-        final int quantity) {
-        final OrderItem item = new OrderItem();
-        item.setId(id);
-        item.setProduct(product);
-        item.setUnitPrice(unitPrice);
-        item.setQuantity(quantity);
-        return item;
+        verify(orderRepository, never()).save(any());
+        verify(orderPublisher, never()).notifyOrderCreated(any());
     }
 }

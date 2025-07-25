@@ -36,14 +36,6 @@ public class Order {
         return new OrderBuilder();
     }
 
-    public void addItem(final Product product, final int quantity) {
-        final OrderItem item = new OrderItem();
-        item.setProduct(product);
-        item.setQuantity(quantity);
-        item.setOrder(this);
-        items.add(item);
-    }
-
     public Order cloneWithBuilder() {
 
         return Order.builder()
@@ -107,6 +99,7 @@ public class Order {
             order.setItems(orderItems);
             order.setDelivery(delivery);
             order.setPayment(payment);
+            order.setTotalAmount(totalAmount);
 
             if (orderItems != null) {
                 for (OrderItem item : orderItems) {

@@ -3,6 +3,8 @@ package com.fabien.smart_order.service;
 import com.fabien.smart_order.event.ProductCreatedEvent;
 import com.fabien.smart_order.model.Product;
 import com.fabien.smart_order.repository.ProductRepository;
+import com.fabien.smart_order.service.product.ProductServiceImpl;
+import com.fabien.smart_order.util.TestDataBuilder;
 import jakarta.persistence.EntityNotFoundException;
 import java.util.List;
 import java.util.Optional;
@@ -37,10 +39,9 @@ class ProductServiceImplTest {
 
     @Test
     void givenValidProducts_whenFindAllProducts_shouldReturnAllProduct() {
-        final Product p1 = new Product(1L, "LaptopTest", 599.99, "InfoTest");
-        final Product p2 = new Product(2L, "SourisTest", 49.99, "InfoTest");
+        final List<Product> expectedProducts = TestDataBuilder.createStandardProducts();
 
-        when(productRepository.findAll()).thenReturn(List.of(p1, p2));
+        when(productRepository.findAll()).thenReturn(expectedProducts);
 
         final List<Product> products = productService.getAllProducts();
 
@@ -51,7 +52,7 @@ class ProductServiceImplTest {
 
     @Test
     void givenExistingIdProducts_whenFindProductById_shouldReturnProduct() {
-        final Product expectedProduct = new Product(1L, "LaptopTest", 599.99, "InfoTest");
+        final Product expectedProduct = TestDataBuilder.createProduct("Laptop", 559.99);
         when(productRepository.findById(1L)).thenReturn(Optional.of(expectedProduct));
 
         final Product product = productService.getProductById(1L);
@@ -82,7 +83,7 @@ class ProductServiceImplTest {
 
     @Test
     void givenValidProduct_whenSaveProduct_shouldReturnSavedProduct() {
-        final Product expectedProduct = new Product(1L, "LaptopTest", 599.99, "InfoTest");
+        final Product expectedProduct = TestDataBuilder.createProduct("Laptop", 559.99);
         when(productRepository.save(any(Product.class))).thenReturn(expectedProduct);
 
         final Product product = productService.saveProduct(expectedProduct);
@@ -122,7 +123,7 @@ class ProductServiceImplTest {
 
     @Test
     void givenValidProduct_whenSaveProduct_shouldSaveBeforePublishingEvent() {
-        final Product validProduct = new Product(1L, "LaptopTest", 599.99, "InfoTest");
+        final Product validProduct = TestDataBuilder.createProduct("Laptop", 559.99);
 
         final InOrder inOrder = inOrder(productRepository, eventPublisher);
 
@@ -134,8 +135,8 @@ class ProductServiceImplTest {
 
     @Test
     void givenEventPublisherFailure_whenSaveProduct_shouldStillReturnSavedProduct() {
-        final Product inputProduct = new Product(null, "LaptopTest", 599.99, "InfoTest");
-        final Product savedProduct = new Product(1L, "LaptopTest", 599.99, "InfoTest");
+        final Product inputProduct = TestDataBuilder.createProduct("Laptop", 559.99);
+        final Product savedProduct = TestDataBuilder.createProduct("Laptop", 559.99);
 
         when(productRepository.save(inputProduct)).thenReturn(savedProduct);
         doThrow(new RuntimeException("Event publication failed"))

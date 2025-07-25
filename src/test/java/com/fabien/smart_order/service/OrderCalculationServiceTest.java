@@ -5,6 +5,7 @@ import com.fabien.smart_order.calculation.TotalCalculationStrategy;
 import com.fabien.smart_order.calculation.factory.TotalCalculationStrategyFactory;
 import com.fabien.smart_order.model.OrderItem;
 import com.fabien.smart_order.model.Product;
+import com.fabien.smart_order.util.TestDataBuilder;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,15 +31,14 @@ class OrderCalculationServiceTest {
 
     @Test
     void givenValidItems_whenCalculateWithStrategy_shouldReturnCorrectTotal() {
-        // Given
-        List<OrderItem> items = createOrderItems();
+        final Product product = TestDataBuilder.createProduct("LaptopTest", 599.99);
+        final List<OrderItem> items = List.of(TestDataBuilder.createOrderItem(1L, product, 599.99, 4));
+
         when(strategyFactory.getStrategy(CalculationType.DISCOUNT)).thenReturn(mockStrategy);
         when(mockStrategy.calculate(items)).thenReturn(90.0);
 
-        // When
-        double result = calculationService.calculateTotal(items, CalculationType.DISCOUNT);
+        final double result = calculationService.calculateTotal(items, CalculationType.DISCOUNT);
 
-        // Then
         assertEquals(90.0, result);
         verify(strategyFactory).getStrategy(CalculationType.DISCOUNT);
         verify(mockStrategy).calculate(items);
@@ -46,25 +46,15 @@ class OrderCalculationServiceTest {
 
     @Test
     void givenNullCalculationType_whenCalculate_shouldUseDefaultStrategy() {
-        // Given
-        List<OrderItem> items = createOrderItems();
+        final Product product = TestDataBuilder.createProduct("LaptopTest", 599.99);
+        final List<OrderItem> items = List.of(TestDataBuilder.createOrderItem(1L, product, 599.99, 4));
+
         when(strategyFactory.getDefaultStrategy()).thenReturn(mockStrategy);
         when(mockStrategy.calculate(items)).thenReturn(100.0);
 
-        // When
-        double result = calculationService.calculateTotal(items, null);
+        final double result = calculationService.calculateTotal(items, null);
 
-        // Then
         assertEquals(100.0, result);
         verify(strategyFactory).getDefaultStrategy();
-    }
-
-    private List<OrderItem> createOrderItems() {
-        Product product = new Product(1L, "Test", 50.0, "Test");
-        OrderItem item = new OrderItem();
-        item.setProduct(product);
-        item.setUnitPrice(50.0);
-        item.setQuantity(2);
-        return List.of(item);
     }
 }

@@ -1,4 +1,4 @@
-package com.fabien.smart_order.service;
+package com.fabien.smart_order.service.product;
 
 import com.fabien.smart_order.event.ProductCreatedEvent;
 import com.fabien.smart_order.model.Product;
