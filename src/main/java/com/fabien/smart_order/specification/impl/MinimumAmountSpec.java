@@ -9,10 +9,10 @@ import org.springframework.stereotype.Component;
 public class MinimumAmountSpec implements OrderSpecification {
 
     AppConfig config = AppConfig.getInstance();
-   
+
     @Override
-    public boolean isSatisfiedBy(Order order) {
-        return order != null && order.getTotalAmount() >= config.getMinimumOrderAmount();
+    public boolean isSatisfiedBy(final Order order) {
+        return order.getTotalAmount() >= config.getMinimumOrderAmount();
     }
 
     @Override

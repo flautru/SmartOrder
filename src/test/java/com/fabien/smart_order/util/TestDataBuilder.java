@@ -7,34 +7,15 @@ import java.util.List;
 
 public class TestDataBuilder {
 
-    public static Order createOrderWithAmount(final double totalAmount) {
-        return Order.builder()
-            .withDelivery("Colissimo")
-            .withPayment("CB")
-            .withTotalAmount(totalAmount)
-            .withOrderItems(List.of())
-            .build();
-    }
-
-    public static Order createOrderWithProducts(final List<Product> products, final String delivery,
-        final String payment) {
-        final List<OrderItem> orderItems = products.stream()
-            .map(product -> new OrderItem(null, null, product, product.getPrice(), 1))
-            .toList();
-
-        return Order.builder()
-            .withDelivery(delivery)
-            .withPayment(payment)
-            .withOrderItems(orderItems)
-            .build();
-    }
+    private static final String DEFAULT_DELIVERY = "Colissimo";
+    private static final String DEFAULT_PAYMENT = "CB";
 
     public static Product createProduct(final Long id, final String name, final double price, final String type) {
         return new Product(id, name, price, type);
     }
 
     public static Product createProduct(final String name, final double price) {
-        return new Product(1L, name, price, "Test");
+        return createProduct(1L, name, price, "Test");
     }
 
     public static OrderItem createOrderItem(final Long id, final Product product, final double unitPrice,
@@ -56,28 +37,68 @@ public class TestDataBuilder {
 
     public static List<Product> createFurnitureProducts() {
         return List.of(
-            createProduct(null, "ChaiseTest", 45.99, "MeubleTest"),
-            createProduct(null, "TapisTest", 24.99, "DécorationTest")
+            createProduct(3L, "ChaiseTest", 45.99, "MeubleTest"),
+            createProduct(4L, "TapisTest", 24.99, "DécorationTest")
         );
     }
 
+    public static List<OrderItem> createStandardOrderItems() {
+        return List.of(
+            createOrderItem(1L, createProduct(1L, "LaptopTest", 599.99, "InfoTest"), 599.99, 2),
+            createOrderItem(2L, createProduct(2L, "SourisTest", 49.99, "InfoTest"), 49.99, 5)
+        );
+    }
+
+    public static List<OrderItem> createEmptyOrderItems() {
+        return List.of();
+    }
+
+    public static Order createOrder(final List<Product> products, final String delivery, final String payment) {
+        final List<OrderItem> orderItems = products.stream()
+            .map(product -> new OrderItem(null, null, product, product.getPrice(), 2))
+            .toList();
+
+        return Order.builder()
+            .withDelivery(delivery)
+            .withPayment(payment)
+            .withOrderItems(orderItems)
+            .build();
+    }
+
     public static Order createStandardOrder() {
-        return createOrderWithProducts(createStandardProducts(), "Colissimo", "CB");
+        return createOrder(createStandardProducts(), DEFAULT_DELIVERY, DEFAULT_PAYMENT);
     }
 
-    public static Order createFurnitureOrder() {
-        return createOrderWithProducts(createFurnitureProducts(), "Chronopost", "Paypal");
-    }
-
-    public static List<Order> createOrderList() {
-        return List.of(createStandardOrder(), createFurnitureOrder());
+    public static Order createOrderWithAmount(final double totalAmount) {
+        return Order.builder()
+            .withDelivery(DEFAULT_DELIVERY)
+            .withPayment(DEFAULT_PAYMENT)
+            .withTotalAmount(totalAmount)
+            .withOrderItems(createEmptyOrderItems())
+            .build();
     }
 
     public static Order createStandardOrderWithDelivery(final String delivery) {
-        return createOrderWithProducts(createStandardProducts(), delivery, "CB");
+        return createOrder(createStandardProducts(), delivery, DEFAULT_PAYMENT);
     }
 
-    public static Order createStandardOrderWithPayment(final String payment) {
-        return createOrderWithProducts(createStandardProducts(), "Colissimo", payment);
+    public static Order createStandardOrderWithId(final Long id) {
+        final Order order = createStandardOrder();
+        order.setId(id);
+        return order;
+    }
+
+    public static Order createOrderWithIdAndAmount(final Long id, final double totalAmount) {
+        final Order order = createStandardOrder();
+        order.setId(id);
+        order.setTotalAmount(totalAmount);
+        return order;
+    }
+
+    public static List<Order> createOrderList() {
+        return List.of(
+            createStandardOrder(),
+            createOrder(createFurnitureProducts(), "Chronopost", "Paypal")
+        );
     }
 }

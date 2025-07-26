@@ -34,32 +34,33 @@ class OrderItemServiceImplTest {
     @Test
     void givenValidOrderItemsAndOrder_whenBuildOrderItems_shouldReturnListOrderItems() {
 
-        final List<Product> products = TestDataBuilder.createStandardProducts();
+        final Product laptop = new Product(1L, "LaptopTest", 599.99, "InfoTest");
+        final Product mouse = new Product(2L, "SourisTest", 49.99, "InfoTest");
 
-        final OrderItem inputItem1 = TestDataBuilder.createOrderItem(1L, products.getFirst(), 99.99, 2);
-        final OrderItem inputItem2 = TestDataBuilder.createOrderItem(2L, products.get(1), 49.99, 1);
+        final OrderItem inputItem1 = new OrderItem(null, null, laptop, 599.99, 1);
+        final OrderItem inputItem2 = new OrderItem(null, null, mouse, 49.99, 2);
 
-        final Order order = new Order.OrderBuilder()
-            .withPayment("TestCb")
-            .withDelivery("TestColissimo")
+        Order order = Order.builder()
+            .withPayment("CB")
+            .withDelivery("Colissimo")
             .withOrderItems(List.of(inputItem1, inputItem2))
             .build();
 
-        when(productRepository.findAllById(Set.of(1L, 2L))).thenReturn(products);
+        when(productRepository.findAllById(Set.of(1L, 2L))).thenReturn(List.of(laptop, mouse));
 
         final List<OrderItem> result = orderItemService.buildOrderItems(order);
 
         assertEquals(2, result.size());
 
         final OrderItem resultItem1 = result.get(0);
-        assertEquals(products.getFirst(), resultItem1.getProduct());
-        assertEquals(2, resultItem1.getQuantity());
-        assertEquals(99.99, resultItem1.getUnitPrice());
+        assertEquals(laptop, resultItem1.getProduct());
+        assertEquals(1, resultItem1.getQuantity());
+        assertEquals(599.99, resultItem1.getUnitPrice());
         assertEquals(order, resultItem1.getOrder());
 
         final OrderItem resultItem2 = result.get(1);
-        assertEquals(products.get(1), resultItem2.getProduct());
-        assertEquals(1, resultItem2.getQuantity());
+        assertEquals(mouse, resultItem2.getProduct());
+        assertEquals(2, resultItem2.getQuantity());
         assertEquals(49.99, resultItem2.getUnitPrice());
         assertEquals(order, resultItem2.getOrder());
 
@@ -69,9 +70,10 @@ class OrderItemServiceImplTest {
     @Test
     void givenNullItems_whenBuildOrderItems_shouldReturnEmptyList() {
 
-        final Order order = new Order.OrderBuilder()
-            .withPayment("TestCb")
-            .withDelivery("TestColissimo")
+        final Order order = Order.builder()
+            .withPayment("CB")
+            .withDelivery("Colissimo")
+            .withOrderItems(null)
             .build();
 
         final List<OrderItem> result = orderItemService.buildOrderItems(order);
@@ -83,9 +85,10 @@ class OrderItemServiceImplTest {
     @Test
     void givenEmptyItems_whenBuildOrderItems_shouldReturnEmptyList() {
 
-        final Order order = new Order.OrderBuilder()
-            .withPayment("TestCb")
-            .withDelivery("TestColissimo")
+        final Order order = Order.builder()
+            .withPayment("CB")
+            .withDelivery("Colissimo")
+            .withOrderItems(TestDataBuilder.createEmptyOrderItems())
             .build();
 
         final List<OrderItem> result = orderItemService.buildOrderItems(order);
@@ -96,12 +99,6 @@ class OrderItemServiceImplTest {
 
     @Test
     void givenNullOrder_whenBuildOrderItems_shouldThrowException() {
-
-        final Product p1 = new Product(1L, "LaptopTest", 599.99, "InfoTest");
-        final OrderItem inputItem = new OrderItem();
-        inputItem.setProduct(p1);
-        inputItem.setQuantity(2);
-        inputItem.setUnitPrice(99.99);
 
         final IllegalArgumentException exception = assertThrows(
             IllegalArgumentException.class,
@@ -115,16 +112,24 @@ class OrderItemServiceImplTest {
     @Test
     void givenUnknownProduct_whenBuildOrderItems_shouldThrowException() {
 
-        final Order order = TestDataBuilder.createStandardOrder();
+        final Product unknownProduct = new Product(999L, "UnknownProduct", 100.0, "Test");
 
-        when(productRepository.findAllById(Set.of(1L, 2L))).thenReturn(List.of());
+        final OrderItem inputItem = new OrderItem(null, null, unknownProduct, 100.0, 1);
+
+        final Order order = Order.builder()
+            .withPayment("CB")
+            .withDelivery("Colissimo")
+            .withOrderItems(List.of(inputItem))
+            .build();
+
+        when(productRepository.findAllById(Set.of(999L))).thenReturn(List.of());
 
         final IllegalArgumentException exception = assertThrows(
             IllegalArgumentException.class,
             () -> orderItemService.buildOrderItems(order)
         );
 
-        assertEquals("Product not found with id : 1", exception.getMessage());
-        verify(productRepository).findAllById(Set.of(1L, 2L));
+        assertEquals("Product not found with id : 999", exception.getMessage());
+        verify(productRepository).findAllById(Set.of(999L));
     }
 }

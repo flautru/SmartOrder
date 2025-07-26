@@ -14,6 +14,9 @@ public class OrderValidationService {
     private final List<OrderSpecification> specifications;
 
     public ValidationResult validateOrder(final Order order) {
+        if (order == null) {
+            throw new IllegalArgumentException("Order cannot be null");
+        }
         final ValidationResult result = new ValidationResult();
 
         for (final OrderSpecification spec : specifications) {
