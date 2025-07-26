@@ -19,7 +19,7 @@ public class OrderPublisher {
         obervers.remove(observer);
     }
 
-    public void notifyOrderCreated(Order order) {
+    public void notifyOrderCreated(final Order order) {
         final OrderEvent event = new OrderEvent(order);
         for (final OrderObserver observer : obervers) {
             observer.onOrderCreated(event);

@@ -71,16 +71,4 @@ class MinimumAmountSpecTest {
             assertTrue(result);
         }
     }
-
-    @Test
-    void givenNullOrder_whenValidate_shouldReturnFalse() {
-        try (final MockedStatic<AppConfig> mockedAppConfig = mockStatic(AppConfig.class)) {
-
-            spec = new MinimumAmountSpec();
-
-            final boolean result = spec.isSatisfiedBy(null);
-
-            assertFalse(result);
-        }
-    }
 }

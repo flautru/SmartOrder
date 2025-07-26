@@ -3,7 +3,9 @@ package com.fabien.smart_order.payment.impl;
 import com.fabien.smart_order.payment.PaymentMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
+@Component
 public class CBPayment implements PaymentMethod {
 
     private static final Logger logger = LoggerFactory.getLogger(CBPayment.class);
