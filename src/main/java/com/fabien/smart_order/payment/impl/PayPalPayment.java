@@ -2,8 +2,12 @@ package com.fabien.smart_order.payment.impl;
 
 import com.fabien.smart_order.config.AppConfig;
 import com.fabien.smart_order.payment.PaymentMethod;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class PayPalPayment implements PaymentMethod {
+
+    private final static Logger logger = LoggerFactory.getLogger(PayPalPayment.class);
 
     AppConfig config = AppConfig.getInstance();
 
@@ -15,9 +19,9 @@ public class PayPalPayment implements PaymentMethod {
     @Override
     public boolean processPayment(final double amount) {
         if (config.isDemoMode()) {
-            System.out.println("Mode démo activé. Aucun paiement effectué");
+            logger.info("Mode démo activé. Aucun paiement effectué");
         } else {
-            System.out.println("Paiment réel de + " + amount + " € effectué");
+            logger.info("Paiment réel de + {} € effectué", amount);
         }
         return true;
     }

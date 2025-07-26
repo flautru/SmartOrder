@@ -7,6 +7,8 @@ import jakarta.persistence.EntityNotFoundException;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,6 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class ProductServiceImpl implements ProductService {
+
+    private static final Logger logger = LoggerFactory.getLogger(ProductServiceImpl.class);
 
     private final ProductRepository productRepository;
 
@@ -42,9 +46,8 @@ public class ProductServiceImpl implements ProductService {
         try {
             eventPublisher.publishEvent(new ProductCreatedEvent(saved));
         } catch (final Exception e) {
-            System.out.println(
-                "Notification failed, but product save successfully for product " + saved.getId() + " : " +
-                    e.getMessage());
+            logger.info("Notification failed, but product save successfully for product {} : {}", saved.getId(),
+                e.getMessage());
         }
 
         return saved;

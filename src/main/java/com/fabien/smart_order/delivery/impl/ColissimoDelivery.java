@@ -1,8 +1,13 @@
 package com.fabien.smart_order.delivery.impl;
 
 import com.fabien.smart_order.delivery.DeliveryMethod;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ColissimoDelivery implements DeliveryMethod {
+
+    private static final Logger logger = LoggerFactory.getLogger(ColissimoDelivery.class);
+
     @Override
     public String getLabel() {
         return "Colissimo";
@@ -15,6 +20,6 @@ public class ColissimoDelivery implements DeliveryMethod {
 
     @Override
     public void deliver(String orderId) {
-        System.out.println("Commande " + orderId + " envoyée par Colissimo");
+        logger.info("Commande {} envoyée par Colissimo", orderId);
     }
 }
