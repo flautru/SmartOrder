@@ -37,7 +37,7 @@ class OrderCalculationServiceTest {
         when(strategyFactory.getStrategy(CalculationType.DISCOUNT)).thenReturn(mockStrategy);
         when(mockStrategy.calculate(items)).thenReturn(90.0);
 
-        final double result = calculationService.calculateTotal(items, CalculationType.DISCOUNT);
+        final double result = calculationService.calculateTotalItem(items, CalculationType.DISCOUNT);
 
         assertEquals(90.0, result);
         verify(strategyFactory).getStrategy(CalculationType.DISCOUNT);
@@ -52,7 +52,7 @@ class OrderCalculationServiceTest {
         when(strategyFactory.getDefaultStrategy()).thenReturn(mockStrategy);
         when(mockStrategy.calculate(items)).thenReturn(100.0);
 
-        final double result = calculationService.calculateTotal(items, null);
+        final double result = calculationService.calculateTotalItem(items, null);
 
         assertEquals(100.0, result);
         verify(strategyFactory).getDefaultStrategy();

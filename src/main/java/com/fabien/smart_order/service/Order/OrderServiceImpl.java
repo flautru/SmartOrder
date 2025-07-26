@@ -5,6 +5,7 @@ import com.fabien.smart_order.model.Order;
 import com.fabien.smart_order.model.OrderItem;
 import com.fabien.smart_order.repository.OrderRepository;
 import com.fabien.smart_order.service.OrderCalculationService;
+import com.fabien.smart_order.service.OrderDeliveryService;
 import com.fabien.smart_order.service.OrderItem.OrderItemServiceImpl;
 import com.fabien.smart_order.service.OrderValidationService;
 import jakarta.persistence.EntityNotFoundException;
@@ -25,6 +26,7 @@ public class OrderServiceImpl implements OrderService {
     private final OrderPublisher orderPublisher;
     private final OrderCalculationService calculationService;
     private final OrderValidationService orderValidationService;
+    private final OrderDeliveryService orderDeliveryService;
 
     @Override
     public List<Order> getAllOrder() {
@@ -43,11 +45,13 @@ public class OrderServiceImpl implements OrderService {
     public Order createOrder(final Order order) {
 
         final List<OrderItem> items = orderItemServiceImpl.buildOrderItems(order);
-        final double total = calculationService.calculateTotal(items);
+        final double totalItem = calculationService.calculateTotalItem(items);
+        final double totalDelivery = orderDeliveryService.calculateDeliveryCost(order);
+        final double finalTotal = totalItem + totalDelivery;
 
         final Order createNewOrder = order.toBuilder()
             .withOrderItems(items)
-            .withTotalAmount(total)
+            .withTotalAmount(finalTotal)
             .build();
 
         orderValidationService.validateOrderOrThrow(order);
@@ -71,7 +75,7 @@ public class OrderServiceImpl implements OrderService {
 
         if (order.isPresent()) {
             final Order clonedOrder = orderRepository.save(order.get().cloneWithBuilder());
-            clonedOrder.setTotalAmount(calculationService.calculateTotal(clonedOrder.getItems()));
+            clonedOrder.setTotalAmount(calculationService.calculateTotalItem(clonedOrder.getItems()));
             orderPublisher.notifyOrderCreated(clonedOrder);
             return clonedOrder;
 
@@ -82,14 +86,14 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public Order createOrderFromRawItems(final String delivery, final String payment, final List<OrderItem> rawItems) {
-        Order tempOrder = Order.builder()
+        final Order tempOrder = Order.builder()
             .withDelivery(delivery)
             .withPayment(payment)
             .withOrderItems(rawItems)
             .build();
 
-        List<OrderItem> enrichedItems = orderItemServiceImpl.buildOrderItems(tempOrder);
-        double total = calculationService.calculateTotal(enrichedItems);
+        final List<OrderItem> enrichedItems = orderItemServiceImpl.buildOrderItems(tempOrder);
+        final double total = calculationService.calculateTotalItem(enrichedItems);
 
         return tempOrder.toBuilder()
             .withOrderItems(enrichedItems)

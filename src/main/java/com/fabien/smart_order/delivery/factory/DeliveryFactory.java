@@ -16,4 +16,16 @@ public class DeliveryFactory {
         this.deliveryMethods = methods.stream()
             .collect(Collectors.toMap(DeliveryMethod::getLabel, Function.identity()));
     }
+
+    public DeliveryMethod getDeliveryMethod(final String type) {
+        final DeliveryMethod method = deliveryMethods.get(type);
+        if (method == null) {
+            throw new IllegalArgumentException("Unknown delivery method: " + type);
+        }
+        return method;
+    }
+
+    public List<DeliveryMethod> getAllDeliveryMethods() {
+        return List.copyOf(deliveryMethods.values());
+    }
 }

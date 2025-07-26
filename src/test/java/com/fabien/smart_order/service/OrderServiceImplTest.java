@@ -40,6 +40,7 @@ class OrderServiceImplTest {
     private OrderPublisher orderPublisher;
     private OrderCalculationService calculationService;
     private OrderValidationService orderValidationService;
+    private OrderDeliveryService orderDeliveryService;
 
     @BeforeEach
     void setUp() {
@@ -48,8 +49,9 @@ class OrderServiceImplTest {
         orderItemService = mock(OrderItemServiceImpl.class);
         calculationService = mock(OrderCalculationService.class);
         orderValidationService = mock(OrderValidationService.class);
+        orderDeliveryService = mock(OrderDeliveryService.class);
         orderService = new OrderServiceImpl(orderRepository, orderItemService, orderPublisher, calculationService,
-            orderValidationService);
+            orderValidationService, orderDeliveryService);
     }
 
     @Test
@@ -132,12 +134,16 @@ class OrderServiceImplTest {
             when(orderItemService.buildOrderItems(inputOrder))
                 .thenReturn(builtOrderItems);
 
-            when(calculationService.calculateTotal(builtOrderItems))
+            when(calculationService.calculateTotalItem(builtOrderItems))
                 .thenReturn(649.98);
+
+            when(orderDeliveryService.calculateDeliveryCost(inputOrder))
+                .thenReturn(15.95);
 
             final Order order = orderService.createOrder(inputOrder);
 
-            final InOrder inOrder = inOrder(orderRepository, orderItemService, calculationService);
+            final InOrder inOrder = inOrder(orderRepository, orderItemService, calculationService,
+                orderDeliveryService);
 
             assertEquals(expectedSavedOrder.getId(), order.getId());
             assertEquals(expectedSavedOrder.getTotalAmount(), order.getTotalAmount());
@@ -146,7 +152,8 @@ class OrderServiceImplTest {
             assertEquals(expectedSavedOrder.getPayment(), order.getPayment());
 
             inOrder.verify(orderItemService).buildOrderItems(inputOrder);
-            inOrder.verify(calculationService).calculateTotal(builtOrderItems);
+            inOrder.verify(calculationService).calculateTotalItem(builtOrderItems);
+            inOrder.verify(orderDeliveryService).calculateDeliveryCost(inputOrder);
             inOrder.verify(orderRepository).save(any(Order.class));
 
             captor.getValue().afterCommit();
@@ -161,7 +168,7 @@ class OrderServiceImplTest {
 
         final List<OrderItem> builtOrderItems = List.of();
         when(orderItemService.buildOrderItems(inputOrder)).thenReturn(builtOrderItems);
-        when(calculationService.calculateTotal(builtOrderItems)).thenReturn(5.0);
+        when(calculationService.calculateTotalItem(builtOrderItems)).thenReturn(5.0);
 
         doThrow(
             new IllegalArgumentException("Validation échouée: Le montant de la commande doit être d'au moins 10.0€"))

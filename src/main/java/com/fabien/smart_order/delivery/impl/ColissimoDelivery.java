@@ -3,7 +3,9 @@ package com.fabien.smart_order.delivery.impl;
 import com.fabien.smart_order.delivery.DeliveryMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
+@Component
 public class ColissimoDelivery implements DeliveryMethod {
 
     private static final Logger logger = LoggerFactory.getLogger(ColissimoDelivery.class);
